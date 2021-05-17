@@ -157,19 +157,15 @@ if __name__ == "__main__":
 
     conn.commit()
 
-    MAX_YEARS = 3
-    max_time = datetime.datetime.now() - relativedelta(years=MAX_YEARS)
-    min_date = calendar.timegm(max_time.utctimetuple())
     old_medias = conn.execute(
-        "select media_id,code from old_posts where created_at < %d order by created_at desc;"
-        % min_date
+        "select media_id, code from old_posts op where id not in (select id from old_posts op2 order by created_at desc limit 120) order by created_at DESC;"
     )
     conn.commit
 
     for media in old_medias:
         print("%s -> %s" % (media[0], media[1]))
         api.delete_media(media[0])
-        sleep(1)
+        sleep(5)
 
     conn.close()
     os.remove("instagram.db")
